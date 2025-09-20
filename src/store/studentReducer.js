@@ -37,6 +37,13 @@ const studentReducer = createSlice({
     addStudent: (state, action) => {
       state.students.push(action.payload);
     },
+    // Thêm action deleteStudent
+    deleteStudent: (state, action) => {
+      const studentId = action.payload;
+      state.students = state.students.filter(
+        (student) => student.id !== studentId
+      );
+    },
   },
 });
 
@@ -46,6 +53,7 @@ export const {
   clearErrors,
   clearCurrentStudent,
   addStudent,
+  deleteStudent, // Export action mới
 } = studentReducer.actions;
 
 export default studentReducer.reducer;

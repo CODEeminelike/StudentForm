@@ -1,8 +1,17 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteStudent } from "../store/studentReducer"; // Import action delete
 
 export default function StudentList() {
+  const dispatch = useDispatch();
   const { students } = useSelector((state) => state.student);
+
+  // Hàm xử lý xóa sinh viên
+  const handleDelete = (studentId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sinh viên này?")) {
+      dispatch(deleteStudent(studentId));
+    }
+  };
 
   return (
     <div>
@@ -53,6 +62,7 @@ export default function StudentList() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => handleDelete(student.id)} // Thêm onClick xử lý xóa
                       className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none dark:focus:ring-red-700"
                     >
                       Xóa
