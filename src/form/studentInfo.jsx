@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setStudentField,
@@ -6,13 +6,22 @@ import {
   clearErrors,
   clearCurrentStudent,
   addStudent,
+  updateStudent,
+  cancelEditing,
 } from "../store/studentReducer";
 
 export default function StudentInfo() {
   const dispatch = useDispatch();
-  const { currentStudent, errors, students } = useSelector(
-    (state) => state.student
-  );
+  const { currentStudent, errors, isEditing, editingStudentId } =
+    useSelector((state) => state.student);
+
+  // useEffect để reset form khi cancel editing
+  useEffect(() => {
+    if (!isEditing) {
+      dispatch(clearCurrentStudent());
+      dispatch(clearErrors());
+    }
+  }, [isEditing, dispatch]);
 
   const handleOnChange = (event) => {
     const { name, value } = event.target;
@@ -78,17 +87,24 @@ export default function StudentInfo() {
     );
 
     if (hasNoErrors) {
-      console.log("Thông tin sinh viên:", currentStudent);
-      dispatch(addStudent(currentStudent));
-      dispatch(clearCurrentStudent());
+      if (isEditing) {
+        // Cập nhật sinh viên
+        dispatch(updateStudent(currentStudent));
+        alert("Cập nhật sinh viên thành công!");
+      } else {
+        // Thêm sinh viên mới
+        dispatch(addStudent(currentStudent));
+        dispatch(clearCurrentStudent());
+        alert("Thêm sinh viên thành công!");
+      }
       dispatch(clearErrors());
-
-      // Hiển thị thông báo thành công hoặc thực hiện hành động khác
-      alert("Thêm sinh viên thành công!");
     } else {
-      console.log("Có lỗi validation, vui lòng kiểm tra lại!");
       alert("Có lỗi validation, vui lòng kiểm tra lại!");
     }
+  };
+
+  const handleCancel = () => {
+    dispatch(cancelEditing());
   };
 
   return (
@@ -96,7 +112,9 @@ export default function StudentInfo() {
       <section className="bg-white dark:bg-gray-900">
         <div className="py-8 px-4 mx-auto max-w-2xl lg:py-16">
           <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
-            Thông tin sinh viên
+            {isEditing
+              ? "Chỉnh sửa thông tin sinh viên"
+              : "Thông tin sinh viên"}
           </h2>
           <form action="#">
             <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
@@ -111,7 +129,8 @@ export default function StudentInfo() {
                   type="text"
                   name="id"
                   value={currentStudent.id}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  disabled={isEditing} // Disable ID khi đang chỉnh sửa
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 disabled:opacity-50"
                   required
                   onChange={handleOnChange}
                   onBlur={handleErrors}
@@ -190,14 +209,25 @@ export default function StudentInfo() {
               </div>
             </div>
           </form>
+          <div className="mt-6 flex space-x-4">
+            <button
+              type="button"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+              onClick={handleSubmit}
+            >
+              {isEditing ? "Cập nhật" : "Thêm sinh viên"}
+            </button>
+            {isEditing && (
+              <button
+                type="button"
+                className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                onClick={handleCancel}
+              >
+                Hủy
+              </button>
+            )}
+          </div>
         </div>
-        <button
-          type="button"
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-          onClick={handleSubmit}
-        >
-          Thêm sinh viên
-        </button>
       </section>
     </div>
   );
